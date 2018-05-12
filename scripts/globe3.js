@@ -36,9 +36,11 @@ define(['lib/d3.v4.12.2'], function(d3) {
     };
 
     var arc = function(from, to, normal) {
+        /*
         if (dot(cross(from, to), normal) > 0) {
         } else {
         }
+        */
         return [fromR3(from), fromR3(to)];
     };
 
@@ -50,7 +52,6 @@ define(['lib/d3.v4.12.2'], function(d3) {
             [[175.0, 90.0], [175.0, -80.0]]
         ].concat([arc(toR3([0, 0]), toR3([0, 90]), toR3([90, 0]))])
     };
-    console.log(lines);
     var points = {
         "type": "MultiPoint",
         "coordinates": [
