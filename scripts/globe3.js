@@ -1,7 +1,6 @@
 define(['lib/d3.v4.12.2'], function(d3) {
 
     var colorGraticule = '#ccc';
-    var colorCountry = '#a00';
 
     var width = 760;
     var height = 760;
@@ -35,13 +34,61 @@ define(['lib/d3.v4.12.2'], function(d3) {
         return [lambda / Math.PI * 180, phi / Math.PI * 180];
     };
 
-    var arc = function(from, to, normal) {
-        /*
-        if (dot(cross(from, to), normal) > 0) {
-        } else {
+    var add = function(a, b) {
+        return [
+            a[0] + b[0],
+            a[1] + b[1],
+            a[2] + b[2]
+        ];
+    };
+
+    var mul = function(c, a) {
+        return [
+            c * a[0],
+            c * a[1],
+            c * a[2]
+        ];
+    };
+
+    var cross = function(a, b) {
+        return [
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]
+        ];
+    };
+
+    var dot = function(a, b) {
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    };
+
+    var arc = function(p1, p2, normal) {
+        var x = p1;
+        var z = normal;
+        var y = cross(z, x);
+
+        var point = function(alpha) {
+            return fromR3(add(mul(Math.cos(alpha), x), mul(Math.sin(alpha), y)));
+        };
+
+        var first = fromR3(p1);
+        var last = fromR3(p2);
+
+        var alpha = Math.atan2(dot(p2, y), dot(p2, x));
+        if (alpha < 0) {
+            alpha += 2 * Math.PI;
         }
-        */
-        return [fromR3(from), fromR3(to)];
+
+        if (alpha <= 2 * Math.PI / 3) {
+            return [[first, last]];
+        }
+        if (alpha <= 4 * Math.PI / 3) {
+            var middle = point(alpha / 2);
+            return [[first, middle], [middle, last]];
+        }
+        var oneThird = point(alpha / 3);
+        var twoThirds = point(2 * alpha / 3);
+        return [[first, oneThird], [oneThird, twoThirds], [twoThirds, last]];
     };
 
     var lines = {
@@ -49,8 +96,20 @@ define(['lib/d3.v4.12.2'], function(d3) {
         'coordinates': [
             [[ 0.0, 0.0], [50.0, 50.0]],
             [[50.0, 0.0], [ 0.0, 50.0]],
-            [[175.0, 90.0], [175.0, -80.0]]
-        ].concat([arc(toR3([0, 0]), toR3([0, 90]), toR3([90, 0]))])
+        //    [[175.0, 90.0], [175.0, -80.0]]
+        ].concat(
+            arc(toR3([0, 0]), toR3([0, 90]), toR3([-90, 0]))
+        ).concat(
+            arc(toR3([5, -45]), toR3([0, 90]), toR3([-85, 0]))
+        ).concat(
+            arc(toR3([10, -90]), toR3([0, 90]), toR3([-80, 0]))
+        ).concat(
+            arc(toR3([15, -135]), toR3([0, 90]), toR3([-75, 0]))
+        ).concat(
+            arc(toR3([20, -180]), toR3([0, 90]), toR3([-70, 0]))
+        ).concat(
+            arc(toR3([25, -225]), toR3([0, 90]), toR3([-65, 0]))
+        )
     };
     var points = {
         "type": "MultiPoint",
